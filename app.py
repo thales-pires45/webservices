@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
@@ -30,6 +32,14 @@ def detalhes_clima(id):
             return jsonify(clima)
 
 
+# Consultar por Data
+@app.route('/clima/<string:data>', methods=['GET'])
+def detalhes_clima_data(data):
+    for clima in dados:
+        if clima.get('data') == str(data):
+            return jsonify(clima)
+
+
 # Consultar Ultimo Cliente
 @app.route('/', methods=['GET'])
 def ultimo_clima():
@@ -52,14 +62,6 @@ def atualizar_clima(id):
 # Criar
 @app.route('/clima/', methods=['POST'])
 def criar_clima():
-    novo_clima = request.get_json()
-    dados.append(novo_clima)
-    return jsonify(dados)
-
-
-# Criar id Incremental
-@app.route('/clima/id/', methods=['POST'])
-def criar_clima_id():
     novo_clima = {
         'id': dados[-1]['id'] + 1,
         'umidade': request.json.get('umidade', ""),
@@ -74,6 +76,23 @@ def criar_clima_id():
     return jsonify(dados)
 
 
+# Criar id e data Incremental
+@app.route('/clima/id/', methods=['POST'])
+def criar_clima_id():
+    novo_clima = {
+        'id': dados[-1]['id'] + 1,
+        'umidade': request.json.get('umidade', ""),
+        'chuva': request.json.get('chuva', ""),
+        'celsius': request.json.get('celsius', ""),
+        'fahrenheit': request.json.get('fahrenheit', ""),
+        'kelvin': request.json.get('kelvin', ""),
+        'data': str(datetime.now().date()),
+        'hora': str(datetime.now().strftime("%H:%M:%S"))
+    }
+    dados.append(novo_clima)
+    return jsonify(dados)
+
+
 # Excluir por id
 @app.route('/clima/<int:id>', methods=['DELETE'])
 def deletar_clima(id):
@@ -81,7 +100,6 @@ def deletar_clima(id):
         if clima.get('id') == id:
             del dados[indice]
     return jsonify(dados)
-
 
 
 app.run(port=5000, host='localhost', debug=True)
